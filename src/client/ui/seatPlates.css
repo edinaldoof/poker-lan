@@ -1,0 +1,671 @@
+/* ==========================================================================
+   Table plates: name plates, action callouts, bet and pot labels.
+   CSS2D elements the renderer positions over the 3D table. Colours come from
+   the --hud-* aliases declared in hud.css (shared club tokens + fallbacks).
+   ========================================================================== */
+
+.seat-anchor,
+.floating-anchor {
+  pointer-events: none;
+  will-change: transform;
+}
+
+.seat-plate {
+  --player-color: var(--hud-brass);
+  --plate-scale: 1;
+  --ring-color: var(--hud-brass);
+  position: relative;
+  display: flex;
+  justify-content: center;
+  color: var(--hud-ivory);
+  font-family: var(--hud-ui);
+  transform: scale(var(--plate-scale));
+}
+
+@media (max-width: 700px) {
+  .seat-plate {
+    --plate-scale: 0.82;
+  }
+}
+
+@media (max-width: 420px) {
+  .seat-plate {
+    --plate-scale: 0.72;
+  }
+}
+
+/* Portrait phones look almost straight down, so the viewer's own plate would cover their lifted cards: it drops
+   below them. `translate` composes with the transform CSS2DRenderer writes, so the anchor itself is untouched. */
+@media (max-width: 420px) and (max-aspect-ratio: 1/1) {
+  .seat-plate.is-self {
+    translate: 0 var(--self-plate-drop, 34px);
+  }
+}
+
+/* Landscape phones: the table is squeezed between the top strip and the action bar, so plates shrink to stay apart. */
+@media (max-height: 520px) and (min-aspect-ratio: 1/1) {
+  :root {
+    /* Half of a 188 px plate at this scale, plus the 4 px margin Stage.ts keeps from the screen edge. */
+    --side-plate-half-width: 79px;
+  }
+
+  .seat-plate {
+    --plate-scale: 0.8;
+  }
+}
+
+.seat-plate[data-level='warn'] {
+  --ring-color: var(--hud-act-bet);
+}
+
+.seat-plate[data-level='urgent'] {
+  --ring-color: var(--hud-act-allin);
+}
+
+/* The callouts above the plate keep their full colour: they announce what just happened to this seat. */
+.seat-plate__main,
+.seat-plate__tags {
+  transition: opacity 0.3s, filter 0.3s;
+}
+
+.seat-plate[data-status='folded'] .seat-plate__main,
+.seat-plate[data-status='folded'] .seat-plate__tags {
+  opacity: 0.5;
+  filter: grayscale(0.7);
+}
+
+.seat-plate[data-status='sittingOut'] .seat-plate__main,
+.seat-plate[data-status='busted'] .seat-plate__main,
+.seat-plate[data-status='offline'] .seat-plate__main,
+.seat-plate[data-status='waiting'] .seat-plate__main,
+.seat-plate[data-status='sittingOut'] .seat-plate__tags,
+.seat-plate[data-status='busted'] .seat-plate__tags,
+.seat-plate[data-status='offline'] .seat-plate__tags,
+.seat-plate[data-status='waiting'] .seat-plate__tags {
+  opacity: 0.62;
+}
+
+/* ---------- The plate: rail leather with a chip for an avatar ---------- */
+
+.seat-plate__main {
+  display: flex;
+  align-items: center;
+  padding: 3px 16px 3px 3px;
+  border: 1px solid rgba(201, 163, 92, 0.3);
+  border-radius: 18px;
+  background: var(--hud-rail);
+  box-shadow: inset 0 1px 0 rgba(238, 228, 207, 0.07), 0 6px 16px rgba(10, 5, 2, 0.65);
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.seat-plate.is-self .seat-plate__main {
+  border-color: var(--hud-brass);
+}
+
+.seat-plate[data-status='allIn'] .seat-plate__main {
+  border-color: var(--hud-act-allin);
+}
+
+.seat-plate.is-acting .seat-plate__main {
+  border-color: var(--hud-brass-bright);
+  box-shadow: inset 0 1px 0 rgba(238, 228, 207, 0.07), 0 0 0 1px var(--hud-brass), 0 0 24px rgba(201, 163, 92, 0.5), 0 6px 16px rgba(10, 5, 2, 0.65);
+}
+
+.seat-plate__avatar-wrap {
+  position: relative;
+  flex: none;
+  width: 52px;
+  height: 52px;
+}
+
+.seat-plate__ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform: rotate(-90deg);
+}
+
+.seat-plate__ring-track {
+  fill: none;
+  stroke: rgba(238, 228, 207, 0.12);
+  stroke-width: 3;
+}
+
+.seat-plate__ring-progress {
+  fill: none;
+  stroke: var(--ring-color);
+  stroke-width: 3;
+  stroke-linecap: round;
+  opacity: 0;
+  transition: opacity 0.2s, stroke 0.3s;
+}
+
+.seat-plate.is-acting .seat-plate__ring-progress {
+  opacity: 1;
+}
+
+/* A casino chip: ivory edge stripes on the player's colour around a darker inlay that holds the emoji. */
+.seat-plate__avatar {
+  position: absolute;
+  inset: 7px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle closest-side, color-mix(in srgb, var(--player-color) 62%, #120c08) 0 58%, var(--hud-ivory) 58% 65%, transparent 65%),
+    repeating-conic-gradient(var(--hud-ivory) 0 9deg, var(--player-color) 9deg 30deg);
+  box-shadow: 0 0 0 1.5px rgba(18, 12, 8, 0.7), 0 2px 5px rgba(10, 5, 2, 0.55);
+  font-size: 15px;
+  line-height: 1;
+}
+
+.seat-plate__dealer {
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  width: 21px;
+  height: 21px;
+  border: 1.5px solid var(--hud-brass);
+  border-radius: 50%;
+  background: var(--hud-ivory);
+  box-shadow: 0 2px 6px rgba(10, 5, 2, 0.6);
+  color: var(--hud-rail);
+  font-family: var(--hud-display);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 18px;
+  text-align: center;
+}
+
+.seat-plate__info {
+  display: grid;
+  gap: 1px;
+  min-width: 56px;
+  max-width: 112px;
+  padding-left: 8px;
+  text-align: left;
+}
+
+.seat-plate__name,
+.seat-plate__chips {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.seat-plate__name {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.seat-plate__chips {
+  color: var(--hud-brass-bright);
+  font-family: var(--hud-display);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Tags under the plate (state, last action, bot thinking) ---------- */
+
+/* Tags and the callout stack are out of flow so the plate never shifts under its anchor. */
+.seat-plate__tags {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  display: flex;
+  gap: 4px;
+  transform: translateX(-50%);
+}
+
+.seat-plate__badge,
+.seat-plate__action,
+.seat-plate__thinking {
+  --tone: var(--hud-smoke);
+  padding: 3px 8px;
+  border: 1px solid color-mix(in srgb, var(--tone) 55%, transparent);
+  border-radius: 8px;
+  background: var(--hud-rail);
+  box-shadow: 0 3px 8px rgba(10, 5, 2, 0.5);
+  color: var(--tone);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.1;
+  white-space: nowrap;
+  animation: plate-label-in 0.25s var(--ease, ease-out);
+}
+
+.seat-plate__action[data-tone='fold'] {
+  --tone: var(--hud-act-fold);
+}
+
+.seat-plate__action[data-tone='check'] {
+  --tone: var(--hud-act-check);
+}
+
+.seat-plate__action[data-tone='call'] {
+  --tone: var(--hud-act-call);
+}
+
+.seat-plate__action[data-tone='bet'] {
+  --tone: var(--hud-act-bet);
+}
+
+.seat-plate__action[data-tone='raise'] {
+  --tone: var(--hud-act-raise);
+}
+
+.seat-plate__action[data-tone='allin'] {
+  --tone: var(--hud-act-allin);
+}
+
+.seat-plate__action[data-tone='blind'] {
+  --tone: var(--hud-ivory);
+}
+
+.seat-plate[data-status='busted'] .seat-plate__badge,
+.seat-plate[data-status='offline'] .seat-plate__badge {
+  --tone: var(--hud-lacquer-bright);
+}
+
+/* The all-in badge stays lit until the hand ends. */
+.seat-plate[data-status='allIn'] .seat-plate__badge {
+  border-color: var(--hud-act-allin);
+  background: var(--hud-act-allin);
+  box-shadow: 0 0 14px rgba(255, 91, 58, 0.6), 0 3px 8px rgba(10, 5, 2, 0.5);
+  color: var(--hud-rail);
+  font-family: var(--hud-display);
+  font-size: 15px;
+  font-weight: 800;
+  animation: plate-allin-glow 1.8s ease-in-out infinite alternate;
+}
+
+.seat-plate__thinking {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-style: dashed;
+  font-weight: 500;
+}
+
+.seat-plate__dots {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.seat-plate__dots i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: plate-think-dot 1.2s ease-in-out infinite both;
+}
+
+.seat-plate__dots i:nth-child(2) {
+  animation-delay: 0.16s;
+}
+
+.seat-plate__dots i:nth-child(3) {
+  animation-delay: 0.32s;
+}
+
+/* ---------- Above the plate: winner ribbon, hand name and the action callout ---------- */
+
+.seat-plate__above {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  width: max-content;
+  max-width: 220px;
+  filter: drop-shadow(0 4px 8px rgba(10, 5, 2, 0.55));
+  transform: translateX(-50%);
+}
+
+.seat-callout {
+  --tone: var(--hud-act-check);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px 5px 8px;
+  border-radius: 10px;
+  background: var(--tone);
+  color: var(--hud-rail);
+  transform-origin: 50% 100%;
+}
+
+/* The tail points at the plate. */
+.seat-callout::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 0 0 2px 0;
+  background: var(--tone);
+  transform: translate(-50%, -5px) rotate(45deg);
+}
+
+.seat-callout[data-tone='fold'] {
+  --tone: var(--hud-act-fold);
+}
+
+.seat-callout[data-tone='check'] {
+  --tone: var(--hud-act-check);
+}
+
+.seat-callout[data-tone='call'] {
+  --tone: var(--hud-act-call);
+}
+
+.seat-callout[data-tone='bet'] {
+  --tone: var(--hud-act-bet);
+}
+
+.seat-callout[data-tone='raise'] {
+  --tone: var(--hud-act-raise);
+}
+
+.seat-callout[data-tone='allin'] {
+  --tone: var(--hud-act-allin);
+}
+
+.seat-callout[data-tone='blind'] {
+  --tone: var(--hud-ivory);
+}
+
+.seat-callout.is-popping {
+  animation: plate-callout-in 0.34s cubic-bezier(0.2, 1.5, 0.4, 1);
+}
+
+.seat-callout.is-leaving {
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.seat-callout__verb {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.seat-callout__amount {
+  font-family: var(--hud-display);
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.seat-plate__hand {
+  max-width: 180px;
+  padding: 3px 9px;
+  border-radius: 4px;
+  background: var(--hud-ivory);
+  color: var(--hud-rail);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  animation: plate-callout-in 0.3s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+/* The ribbon carries the hand name itself, so the loose label steps aside. */
+.seat-plate.is-winner .seat-plate__hand {
+  display: none;
+}
+
+.seat-ribbon {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  min-width: 128px;
+  padding: 5px 22px 6px;
+  background: var(--hud-brass);
+  color: var(--hud-rail);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 11px) 50%, 100% 100%, 0 100%, 11px 50%);
+}
+
+.seat-ribbon.is-popping {
+  animation: plate-ribbon-in 0.45s cubic-bezier(0.2, 1.3, 0.4, 1);
+}
+
+.seat-ribbon__line {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.seat-ribbon__title {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.seat-ribbon__amount {
+  font-family: var(--hud-display);
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.seat-ribbon__hand {
+  max-width: 170px;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.seat-plate.is-winner .seat-plate__main {
+  border-color: var(--hud-brass-bright);
+  animation: plate-win-pulse 0.9s ease-in-out 3;
+}
+
+/*
+ * Portrait screens: the avatar sits over the text, which keeps a plate under 82 px wide. The side seats (slots 2
+ * and 6) are close to the screen edge, so their tags and callouts hang inward from the plate's outer edge.
+ * --side-plate-half-width in styles.css must follow these widths.
+ */
+@media (max-aspect-ratio: 1/1) {
+  .seat-plate__main {
+    flex-direction: column;
+    padding: 3px 4px 4px;
+    border-radius: 20px;
+  }
+
+  .seat-plate__info {
+    min-width: 0;
+    max-width: 72px;
+    padding-left: 0;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .seat-plate[data-slot='2'] .seat-plate__tags,
+  .seat-plate[data-slot='2'] .seat-plate__above {
+    left: 0;
+    align-items: flex-start;
+    transform: none;
+  }
+
+  .seat-plate[data-slot='6'] .seat-plate__tags,
+  .seat-plate[data-slot='6'] .seat-plate__above {
+    right: 0;
+    left: auto;
+    align-items: flex-end;
+    transform: none;
+  }
+
+  .seat-plate[data-slot='2'] .seat-callout::after {
+    left: 28px;
+  }
+
+  .seat-plate[data-slot='6'] .seat-callout::after {
+    left: auto;
+    right: 28px;
+    transform: translate(0, -5px) rotate(45deg);
+  }
+}
+
+/* ---------- Bet and pot labels ---------- */
+
+.bet-label,
+.pot-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(201, 163, 92, 0.5);
+  background: var(--hud-rail);
+  box-shadow: 0 4px 10px rgba(10, 5, 2, 0.55);
+  color: var(--hud-ivory);
+  font-family: var(--hud-display);
+  font-weight: 700;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  animation: plate-label-in 0.25s var(--ease, ease-out);
+}
+
+.bet-label {
+  /* SeatPlates slides the pill with left/top so it never covers a plate; transform belongs to the pop-in. */
+  position: relative;
+  padding: 1px 10px 1px 6px;
+  border-radius: 999px;
+  font-size: 17px;
+  line-height: 1.25;
+}
+
+/* A small chip in front of the amount. */
+.bet-label::before {
+  content: '';
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle closest-side, var(--hud-rail) 0 38%, transparent 39%),
+    repeating-conic-gradient(var(--hud-ivory) 0 20deg, var(--hud-brass) 20deg 60deg);
+  box-shadow: 0 0 0 1px rgba(10, 5, 2, 0.6);
+}
+
+.pot-label {
+  padding: 3px 14px;
+  border-color: var(--hud-brass);
+  border-radius: 10px;
+  color: var(--hud-brass-bright);
+  font-size: 20px;
+  line-height: 1.15;
+  /* Lifted with top (not transform) so the entrance keyframes cannot undo it. */
+  position: relative;
+  top: -20px;
+}
+
+@media (max-width: 700px) {
+  .bet-label {
+    font-size: 15px;
+  }
+
+  .pot-label {
+    padding: 2px 11px;
+    font-size: 17px;
+  }
+}
+
+/* Compact layouts: the plates keep their pixel size while the table shrinks, so the pills shrink too. */
+@media (max-height: 520px) and (min-aspect-ratio: 1/1), (max-width: 420px) and (max-aspect-ratio: 1/1) {
+  .bet-label {
+    gap: 4px;
+    padding: 0 8px 0 5px;
+    font-size: 14px;
+    line-height: 1.2;
+  }
+
+  .bet-label::before {
+    width: 9px;
+    height: 9px;
+  }
+}
+
+/* ---------- Motion ---------- */
+
+@keyframes plate-label-in {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes plate-callout-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.6);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.07);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes plate-ribbon-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scaleX(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes plate-win-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px rgba(220, 186, 120, 0.5), 0 0 14px rgba(201, 163, 92, 0.4), 0 6px 16px rgba(10, 5, 2, 0.65);
+  }
+  50% {
+    box-shadow: 0 0 0 2px rgba(238, 228, 207, 0.9), 0 0 38px rgba(220, 186, 120, 0.9), 0 6px 16px rgba(10, 5, 2, 0.65);
+  }
+}
+
+@keyframes plate-allin-glow {
+  from {
+    box-shadow: 0 0 8px rgba(255, 91, 58, 0.4), 0 3px 8px rgba(10, 5, 2, 0.5);
+  }
+  to {
+    box-shadow: 0 0 18px rgba(255, 91, 58, 0.85), 0 3px 8px rgba(10, 5, 2, 0.5);
+  }
+}
+
+@keyframes plate-think-dot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}

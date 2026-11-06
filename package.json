@@ -1,0 +1,35 @@
+{
+  "name": "poker-lan",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mesa Real - Texas Hold'em No-Limit multiplayer em rede local com mesa 3D",
+  "type": "module",
+  "scripts": {
+    "start": "npm run build && npm run serve",
+    "serve": "tsx src/server/index.ts",
+    "build": "vite build",
+    "dev": "tsx watch src/server/index.ts --dev",
+    "dev:client": "vite",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "prepare-assets": "python -I tools/prepare_assets.py"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1",
+    "tsx": "^4.19.2"
+  },
+  "devDependencies": {
+    "@fontsource/barlow": "^5.3.0",
+    "@fontsource/big-shoulders-display": "^5.3.0",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.10.0",
+    "@types/three": "^0.170.0",
+    "gsap": "^3.12.5",
+    "socket.io-client": "^4.8.1",
+    "three": "^0.170.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.0",
+    "vitest": "^3.0.0"
+  }
+}

@@ -1,0 +1,1243 @@
+/* ==========================================================================
+   Action bar: the player's controls, a slim leather strip at the rail of the
+   table. Colour of each move matches the callouts the table shows for it.
+   Wide screens: one row of four buttons docked bottom-right. Phones: a short
+   bottom sheet. The raise controls open upward, in two compact rows.
+   ========================================================================== */
+
+:root {
+  --act-fold: #9aa3ad;
+  --act-check: #5aa9ff;
+  --act-call: #35c98a;
+  --act-bet: #e4b363;
+  --act-raise: #f0c674;
+  --act-allin: #ff5b3a;
+  --act-win: #ffd36b;
+}
+
+/* Holds the panel and its live region; it adds no box, so the panel lays out as a direct child of the HUD. */
+.action-bar-host {
+  display: contents;
+}
+
+.action-bar {
+  /* Same materials as the club menus; local so the bar stays right even if the menu kit is not loaded. */
+  --ab-leather: #1a120d;
+  --ab-leather-raised: #2a1d15;
+  --ab-brass: #c9a35c;
+  --ab-brass-deep: #8f6f2f;
+  --ab-ivory: #eee4cf;
+  --ab-smoke: #8e8577;
+  --ab-baize: #155e43;
+  --ab-warn: #ff9f43;
+  --ab-ink: #15100a;
+  --ab-ui: var(--font-ui, 'Barlow', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
+  --ab-display: 'Big Shoulders Display', 'Barlow Condensed', 'Arial Narrow', 'Roboto Condensed', sans-serif;
+  --ab-ease: var(--ease, cubic-bezier(0.2, 0.8, 0.2, 1));
+  --timer-color: var(--ab-brass);
+
+  position: relative;
+  display: grid;
+  gap: 6px;
+  width: min(560px, 100%);
+  padding: 12px 12px 10px;
+  border: 1px solid rgba(201, 163, 92, 0.3);
+  border-radius: 14px;
+  background: var(--ab-leather);
+  color: var(--ab-ivory);
+  font-family: var(--ab-ui);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.25;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5);
+  transition: box-shadow 0.2s;
+}
+
+/* The brass stitching of the rail leather. */
+.action-bar::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px dashed rgba(201, 163, 92, 0.3);
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+.action-bar[data-turn='mine'] {
+  box-shadow: 0 0 0 1.5px var(--ab-brass), 0 10px 26px rgba(0, 0, 0, 0.5);
+}
+
+.action-bar[data-level='warn'] {
+  --timer-color: var(--ab-warn);
+}
+
+.action-bar[data-level='urgent'] {
+  --timer-color: var(--act-allin);
+}
+
+.action-bar :focus-visible {
+  outline: 2px solid var(--ab-brass);
+  outline-offset: 3px;
+}
+
+.action-icon {
+  display: block;
+  flex: none;
+}
+
+/* ---------- Timer ---------- */
+
+.action-bar__timer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 13px 13px 0 0;
+  background: rgba(238, 228, 207, 0.08);
+  transition: opacity 0.2s;
+}
+
+.action-bar__timer[data-active='false'] {
+  opacity: 0;
+}
+
+.action-bar__timer-fill {
+  height: 100%;
+  background: var(--timer-color);
+  transform-origin: left center;
+  transition: background-color 0.3s;
+  will-change: transform;
+}
+
+.action-bar[data-level='urgent'] .action-bar__timer {
+  height: 5px;
+}
+
+/* ---------- Head ---------- */
+
+.action-bar__head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-height: 20px;
+  padding: 0 2px;
+}
+
+.action-bar__status {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ab-smoke);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.action-bar[data-turn='mine'] .action-bar__status {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ab-brass);
+}
+
+/* Shown only where the floating hand chip is hidden (small portrait phones and landscape phones). */
+.action-bar__hand {
+  display: none;
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.action-bar__hand::before {
+  content: 'Sua mão: ';
+  font-weight: 500;
+  color: var(--ab-smoke);
+}
+
+.action-bar__seconds {
+  min-width: 2.4ch;
+  margin-left: auto;
+  font-family: var(--ab-display);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  text-align: right;
+  color: var(--timer-color);
+}
+
+/* ---------- Pre-actions ---------- */
+
+.action-bar__preactions {
+  display: grid;
+  gap: 6px;
+}
+
+.preaction-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.preaction {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  min-height: 36px;
+  padding: 0 8px;
+  border: 1.5px solid rgba(238, 228, 207, 0.24);
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ab-ivory);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.1;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.preaction__mark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid rgba(238, 228, 207, 0.38);
+  border-radius: 50%;
+  color: transparent;
+}
+
+.preaction[aria-pressed='true'] {
+  border-color: var(--ab-ivory);
+  background: var(--ab-baize);
+}
+
+.preaction[aria-pressed='true'] .preaction__mark {
+  border-color: var(--ab-ivory);
+  background: var(--ab-ivory);
+  color: var(--ab-baize);
+}
+
+.preaction-hint {
+  margin: 0;
+  padding: 0 2px;
+  font-size: 12px;
+  color: var(--ab-smoke);
+}
+
+/* ---------- Raise controls: two rows, chips on top, amount and slider below ---------- */
+
+/* The controls fold away with a grid-row transition instead of animating height. */
+.action-bar__raise {
+  display: grid;
+  grid-template-rows: 0fr;
+  margin-block: -3px;
+  opacity: 0;
+  transition: grid-template-rows 0.26s var(--ab-ease), margin 0.26s var(--ab-ease), opacity 0.2s;
+}
+
+.action-bar__raise[data-open='true'] {
+  grid-template-rows: 1fr;
+  margin-block: 0;
+  opacity: 1;
+}
+
+.action-bar__raise-inner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'tokens tokens tokens'
+    'value slider steppers';
+  align-items: center;
+  gap: 6px 10px;
+  min-height: 0;
+  overflow: hidden;
+  /* Keeps focus rings, the chip lift and the slider thumb from being clipped by the overflow. */
+  padding: 6px 4px 4px;
+  margin: -6px -4px -4px;
+}
+
+.raise-presets {
+  grid-area: tokens;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px;
+}
+
+/* A chip token: the fill is the colour of a real chip, the dashed ring is its edge stripe. */
+.raise-token {
+  position: relative;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  min-height: 34px;
+  padding: 2px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--chip, var(--ab-ivory));
+  color: var(--chip-ink, var(--ab-ink));
+  cursor: pointer;
+  transition: transform 0.14s var(--ab-ease), box-shadow 0.14s;
+}
+
+.raise-token::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border: 1.5px dashed var(--chip-edge, currentColor);
+  border-radius: inherit;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.raise-token__name {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.raise-token__value {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.1;
+  opacity: 0.85;
+}
+
+.raise-token[aria-pressed='true'] {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 2px var(--ab-leather), 0 0 0 3.5px var(--ab-ivory);
+}
+
+.raise-token:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.raise-token:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* One colour per size, shared by the token and the tick it leaves on the slider. */
+.action-bar [data-preset='min'] {
+  --chip: #eee4cf;
+  --chip-ink: #1a120d;
+  --chip-edge: #1a120d;
+}
+
+.action-bar [data-preset='doubleBigBlind'] {
+  --chip: #b8402f;
+  --chip-ink: #fff1e6;
+  --chip-edge: #fff1e6;
+}
+
+.action-bar [data-preset='halfPot'] {
+  --chip: #2f62a8;
+  --chip-ink: #eef4ff;
+  --chip-edge: #eef4ff;
+}
+
+.action-bar [data-preset='threeQuarterPot'] {
+  --chip: #1f7a55;
+  --chip-ink: #eafff4;
+  --chip-edge: #eafff4;
+}
+
+.action-bar [data-preset='pot'] {
+  --chip: #2b2520;
+  --chip-ink: #eee4cf;
+  --chip-edge: #c9a35c;
+}
+
+.action-bar [data-preset='allIn'] {
+  --chip: var(--act-allin);
+  --chip-ink: #1f0a05;
+  --chip-edge: #1f0a05;
+}
+
+.raise-amount {
+  display: contents;
+}
+
+.raise-amount__value {
+  grid-area: value;
+  display: grid;
+  gap: 0;
+  min-width: 7ch;
+}
+
+.amount-field {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.amount-field__input {
+  width: 6ch;
+  max-width: 100%;
+  min-width: 0;
+  padding: 0 2px;
+  border: 0;
+  border-bottom: 2px solid rgba(201, 163, 92, 0.5);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ab-ivory);
+  font-family: var(--ab-display);
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+@supports (field-sizing: content) {
+  .amount-field__input {
+    field-sizing: content;
+    width: auto;
+    min-width: 3ch;
+    max-width: 10ch;
+  }
+}
+
+.amount-field__input::selection {
+  background: rgba(201, 163, 92, 0.4);
+  color: var(--ab-ivory);
+}
+
+.amount-field__input:focus {
+  border-bottom-color: var(--ab-brass);
+}
+
+.amount-field__input[aria-invalid='true'] {
+  color: var(--act-allin);
+}
+
+.amount-field__input:disabled {
+  opacity: 0.5;
+}
+
+.amount-field__unit {
+  display: none;
+}
+
+/* The raise button already says "= 2 BB, 29% do pote"; only the phone sheet, which hides that line, shows it here. */
+.raise-readout {
+  display: none;
+  flex-wrap: wrap;
+  gap: 0 8px;
+  font-size: 12px;
+  color: var(--ab-smoke);
+}
+
+.raise-readout__fact:empty {
+  display: none;
+}
+
+.raise-steppers {
+  grid-area: steppers;
+  display: flex;
+  gap: 6px;
+}
+
+.raise-stepper {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1.5px solid rgba(238, 228, 207, 0.4);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ab-ivory);
+  cursor: pointer;
+  transition: background-color 0.15s, opacity 0.15s;
+}
+
+.raise-stepper:active:not(:disabled) {
+  background: rgba(238, 228, 207, 0.14);
+}
+
+.raise-stepper[aria-disabled='true'] {
+  opacity: 0.4;
+}
+
+.raise-stepper:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.raise-slider {
+  --thumb: 24px;
+  grid-area: slider;
+  position: relative;
+  height: 32px;
+}
+
+.raise-slider__ticks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.raise-slider__tick {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--at, 0));
+  width: 4px;
+  height: 14px;
+  margin: -7px 0 0 -2px;
+  border-radius: 2px;
+  background: var(--chip, var(--ab-ivory));
+}
+
+.raise-slider__input {
+  --fill: 0%;
+  position: relative;
+  width: 100%;
+  height: 32px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.raise-slider__input::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--ab-brass) var(--fill), rgba(238, 228, 207, 0.2) var(--fill));
+}
+
+.raise-slider__input::-webkit-slider-thumb {
+  width: var(--thumb);
+  height: var(--thumb);
+  margin-top: calc((6px - var(--thumb)) / 2);
+  border: 4px solid var(--ab-leather);
+  border-radius: 50%;
+  background: var(--ab-brass);
+  box-shadow: 0 0 0 1.5px var(--ab-brass), 0 2px 6px rgba(0, 0, 0, 0.5);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.raise-slider__input::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(238, 228, 207, 0.2);
+}
+
+.raise-slider__input::-moz-range-progress {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--ab-brass);
+}
+
+.raise-slider__input::-moz-range-thumb {
+  box-sizing: border-box;
+  width: var(--thumb);
+  height: var(--thumb);
+  border: 4px solid var(--ab-leather);
+  border-radius: 50%;
+  background: var(--ab-brass);
+  box-shadow: 0 0 0 1.5px var(--ab-brass), 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.raise-slider__input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---------- Buttons: one row of four, the raise last and widest ---------- */
+
+.action-bar__buttons {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr 1fr 1.5fr;
+  gap: 6px;
+}
+
+.action-btn {
+  position: relative;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 0;
+  min-width: 0;
+  min-height: 64px;
+  padding: 6px 8px 5px 10px;
+  border: 1.5px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ab-ink);
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.12s, filter 0.15s, opacity 0.15s, box-shadow 0.12s;
+}
+
+.action-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.action-btn__top {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  max-width: 100%;
+  /* Room for the keyboard hint in the corner. */
+  padding-right: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.action-btn__caption {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.action-btn__headline {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  font-family: var(--ab-display);
+  font-size: 25px;
+  font-weight: 800;
+  line-height: 1.02;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+
+.action-btn__details {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 0 8px;
+  min-height: 13px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.2;
+  opacity: 0.8;
+}
+
+.action-btn__key {
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  font-family: var(--ab-ui);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 14px;
+  text-align: center;
+  opacity: 0.55;
+}
+
+.action-btn--fold {
+  border-color: rgba(154, 163, 173, 0.55);
+  color: var(--ab-ivory);
+}
+
+.action-btn--fold .action-btn__icon {
+  color: var(--act-fold);
+}
+
+.action-btn--call {
+  background: var(--act-call);
+}
+
+.action-btn--call[data-mode='check'] {
+  background: var(--act-check);
+}
+
+/* Coloured but quiet: the most expensive move should not be the loudest one. */
+.action-btn--allin {
+  border-color: var(--act-allin);
+  color: var(--ab-ivory);
+}
+
+.action-btn--allin .action-btn__icon,
+.action-btn--allin .action-btn__headline {
+  color: var(--act-allin);
+}
+
+/* The one loud element of the bar: a brass plate with a hard edge, like a key. */
+.action-btn--raise {
+  background: var(--act-bet);
+  box-shadow: 0 2px 0 var(--ab-brass-deep);
+}
+
+.action-btn--raise[data-kind='raise'] {
+  background: var(--act-raise);
+}
+
+.action-btn--raise:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 var(--ab-brass-deep);
+}
+
+.action-btn--raise:disabled {
+  box-shadow: none;
+}
+
+/* ---------- Status only: nothing to decide, so the bar shrinks to a line ---------- */
+
+.action-bar[data-mode='status'] {
+  gap: 0;
+  width: auto;
+  max-width: 100%;
+  padding: 7px 16px;
+  border-radius: 999px;
+}
+
+.action-bar[data-mode='status']::before,
+.action-bar[data-mode='status'] .action-bar__timer {
+  display: none;
+}
+
+.action-bar[data-mode='status'] .action-bar__seconds {
+  display: none;
+}
+
+/* The collapsed raise controls would still widen a bar that has no decision to show. */
+.action-bar:not([data-mode='turn']) .action-bar__raise {
+  display: none;
+}
+
+/* ---------- Layouts ---------- */
+
+/* Small portrait phones and landscape phones: the hand name moves from the floating chip into the bar. */
+@media (max-width: 599px), (max-height: 520px) {
+  .action-bar__hand {
+    display: block;
+  }
+}
+
+@media (max-width: 599px) {
+  .action-bar {
+    width: 100%;
+  }
+
+  .action-bar[data-mode='status'] {
+    width: auto;
+  }
+}
+
+/*
+ * Wide landscape screens: a slim strip docked bottom-right. The four moves share one row and the raise controls
+ * open upward, so the viewer's seat, the cards and the side plates stay in view. The table is framed by height, so
+ * its lower-right seat plate ends about 43vh to the right of the centre: the strip takes only what is left beyond
+ * it (at least 300 px, at most 540 px) and never covers that plate when the table is full.
+ */
+@media (min-width: 1000px) and (min-aspect-ratio: 5/4) and (min-height: 521px) {
+  .hud-bottom .action-bar {
+    position: absolute;
+    right: calc(env(safe-area-inset-right, 0px) + 12px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+    width: clamp(310px, calc(50vw - 43vh - 20px), 540px);
+    padding-inline: 6px;
+    container-type: inline-size;
+  }
+
+  .hud-bottom .action-bar[data-mode='status'] {
+    width: auto;
+    container-type: normal;
+  }
+
+  .action-bar__buttons {
+    grid-template-columns: repeat(3, minmax(auto, 1fr)) minmax(auto, 1.5fr);
+    gap: 3px;
+  }
+}
+
+/* A strip under 520 px has no room for the icons: the caption, the amount and the key badge carry each button. */
+@container (max-width: 519px) {
+  .action-btn {
+    padding: 5px 5px 5px 7px;
+  }
+
+  .action-btn__icon {
+    display: none;
+  }
+
+  .action-btn__top {
+    padding-right: 17px;
+    font-size: 11.5px;
+  }
+
+  /* The columns size to the caption, so a word is never cut to make room. */
+  .action-btn__caption {
+    flex: none;
+    overflow: visible;
+  }
+
+  .action-btn__details {
+    gap: 0 6px;
+    font-size: 10.5px;
+  }
+
+  /* Raising: all-in is one of the chips, so its button gives its column to "Confirmar aumento". */
+  .action-bar[data-raise='open'] .action-btn--allin {
+    display: none;
+  }
+
+  .action-bar[data-raise='open'] .action-bar__buttons {
+    grid-template-columns: minmax(auto, 0.8fr) minmax(auto, 1fr) minmax(auto, 1.7fr);
+  }
+
+  .action-btn__headline {
+    font-size: 23px;
+  }
+
+  .action-btn__key {
+    top: 4px;
+    right: 3px;
+    min-width: 14px;
+    height: 14px;
+    padding: 0 2px;
+    font-size: 9.5px;
+    line-height: 12px;
+  }
+}
+
+/*
+ * Phones held upright: a short bottom sheet. Each button is one line of caption and detail with the amount at the
+ * end, 2 + 2 in a grid, so the sheet is about 160 px tall and the viewer's own cards and plate stay above it.
+ */
+@media (max-width: 599px) and (min-height: 521px) {
+  .action-bar {
+    gap: 5px;
+    padding: 10px 10px 8px;
+  }
+
+  .action-bar__buttons {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .action-btn--fold {
+    grid-column: 1 / span 2;
+    grid-row: 1;
+  }
+
+  .action-btn--call {
+    grid-column: 3 / span 3;
+    grid-row: 1;
+  }
+
+  .action-btn--allin {
+    grid-column: 1 / span 2;
+    grid-row: 2;
+  }
+
+  .action-btn--raise {
+    grid-column: 3 / span 3;
+    grid-row: 2;
+  }
+
+  .action-btn {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'top headline'
+      'details headline';
+    align-items: center;
+    column-gap: 6px;
+    min-height: 52px;
+    padding: 5px 10px;
+  }
+
+  .action-btn__top {
+    grid-area: top;
+    padding-right: 0;
+  }
+
+  .action-btn__icon,
+  .action-btn__key {
+    display: none;
+  }
+
+  .action-btn__headline {
+    grid-area: headline;
+    font-size: 24px;
+  }
+
+  .action-btn__details {
+    grid-area: details;
+    min-height: 0;
+  }
+
+  /*
+   * Raising: the amount and its facts sit beside the slider, the buttons become one row of three (all-in is one of
+   * the chips) and the sheet grows by a little more than a button row.
+   */
+  .action-bar[data-raise='open'] .action-bar__raise-inner {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 4px 8px;
+  }
+
+  .action-bar[data-raise='open'] .raise-token {
+    min-height: 40px;
+  }
+
+  .action-bar[data-raise='open'] .raise-readout {
+    display: flex;
+  }
+
+  .action-bar[data-raise='open'] .amount-field__input {
+    min-height: 32px;
+    font-size: 28px;
+  }
+
+  .action-bar[data-raise='open'] .action-bar__buttons {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.6fr);
+  }
+
+  .action-bar[data-raise='open'] .action-btn--fold,
+  .action-bar[data-raise='open'] .action-btn--call,
+  .action-bar[data-raise='open'] .action-btn--raise {
+    grid-column: auto;
+    grid-row: 1;
+    min-height: 48px;
+    padding: 4px 8px;
+  }
+
+  .action-bar[data-raise='open'] .action-btn--allin,
+  .action-bar[data-raise='open'] .action-btn__details {
+    display: none;
+  }
+
+  .action-bar[data-raise='open'] .action-btn {
+    grid-template-areas: 'top headline';
+  }
+
+  .action-bar[data-raise='open'] .action-btn__headline {
+    font-size: 22px;
+  }
+
+  /* The narrow fold button keeps "Fold" only; its accessible name still says "Desistir". */
+  .action-bar[data-raise='open'] .action-btn--fold .action-btn__caption {
+    display: none;
+  }
+}
+
+/* At 320 px the three buttons are about 63, 90 and 126 px wide: smaller captions keep "Desistir" and "Confirmar aumento" whole. */
+@media (max-width: 359px) and (min-height: 521px) {
+  .action-bar[data-raise='open'] .action-btn--fold,
+  .action-bar[data-raise='open'] .action-btn--call,
+  .action-bar[data-raise='open'] .action-btn--raise {
+    padding-inline: 5px;
+  }
+
+  .action-bar[data-raise='open'] .action-btn__caption {
+    font-size: 11px;
+  }
+}
+
+/*
+ * Landscape phones. The table cannot give up more height, so the raise controls sit beside the four buttons
+ * (always open, there is room) and every control is a single compact line. Touch targets stay 44 px tall through
+ * a larger hit area. styles.css reads the height of this layout for --hud-bottom-reserve.
+ */
+@media (max-height: 520px) {
+  .action-bar {
+    width: min(760px, 100%);
+    padding: 10px 10px 8px;
+    gap: 4px;
+  }
+
+  .action-bar[data-mode='turn'] {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    grid-template-areas:
+      'head buttons'
+      'raise buttons';
+    column-gap: 10px;
+    align-items: start;
+  }
+
+  .action-bar[data-mode='turn'] .action-bar__head {
+    grid-area: head;
+  }
+
+  .action-bar[data-mode='turn'] .action-bar__raise {
+    grid-area: raise;
+    margin-block: -3px;
+  }
+
+  .action-bar[data-mode='turn'] .action-bar__raise[data-open='true'] {
+    margin-block: 0;
+  }
+
+  .action-bar[data-mode='turn'] .action-bar__buttons {
+    grid-area: buttons;
+  }
+
+  .action-bar[data-mode='status'] {
+    padding: 6px 14px;
+  }
+
+  .action-bar__head {
+    min-height: 20px;
+  }
+
+  .action-bar__status,
+  .action-bar[data-turn='mine'] .action-bar__status {
+    font-size: 14px;
+  }
+
+  .action-bar__seconds {
+    font-size: 20px;
+  }
+
+  .action-bar__preactions {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    align-items: center;
+    gap: 4px 12px;
+  }
+
+  .preaction {
+    min-height: 40px;
+  }
+
+  .raise-presets {
+    gap: 4px;
+  }
+
+  /* The hit area of a 34 px chip reaches into the gap to make 44 px. */
+  .raise-token::before {
+    content: '';
+    position: absolute;
+    inset: -5px 0;
+  }
+
+  .raise-token__value {
+    display: none;
+  }
+
+  .amount-field__input {
+    font-size: 26px;
+  }
+
+  .raise-stepper::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+  }
+
+  .action-bar__buttons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .action-btn--fold,
+  .action-btn--call,
+  .action-btn--allin,
+  .action-btn--raise {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .action-btn,
+  .action-btn--raise {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      'icon caption'
+      'icon headline';
+    align-items: center;
+    column-gap: 8px;
+    min-height: 44px;
+    padding: 4px 10px;
+  }
+
+  .action-btn__top {
+    display: contents;
+  }
+
+  .action-btn__icon {
+    grid-area: icon;
+  }
+
+  .action-btn__caption {
+    grid-area: caption;
+    font-size: 11.5px;
+    font-weight: 600;
+  }
+
+  .action-btn__headline {
+    grid-area: headline;
+    font-size: 22px;
+  }
+
+  .action-btn__details,
+  .action-btn__key {
+    display: none;
+  }
+}
+
+/* Very narrow phones: keep six chips on one row. */
+@media (max-width: 359px) {
+  .raise-token__name {
+    font-size: 11px;
+  }
+
+  .raise-token__value {
+    font-size: 10.5px;
+  }
+
+  /* Six chips in 288 px are 40 px wide; the hit area reaches into the gap to make 44 px. */
+  .raise-token::before {
+    content: '';
+    position: absolute;
+    inset: -5px -2px;
+  }
+}
+
+/* Touch screens: 44 px targets, drawn from a smaller face where the layout is tight. */
+@media (pointer: coarse) {
+  .raise-token {
+    min-height: 40px;
+  }
+
+  /* The hit area of a 40 px chip reaches 2 px into the gap on each side to make 44 px. */
+  .raise-token::before {
+    content: '';
+    position: absolute;
+    inset: -2px 0;
+  }
+
+  .raise-slider,
+  .raise-slider__input {
+    height: 44px;
+  }
+
+  .raise-stepper {
+    width: 44px;
+    height: 44px;
+  }
+
+  .preaction {
+    min-height: 44px;
+  }
+}
+
+@media (pointer: coarse) and (max-height: 520px) {
+  .raise-token {
+    min-height: 34px;
+  }
+
+  .raise-slider,
+  .raise-slider__input {
+    height: 36px;
+  }
+
+  .raise-stepper {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .action-btn__key {
+    display: none;
+  }
+
+  .action-btn__top {
+    padding-right: 0;
+  }
+}
+
+@media (hover: hover) {
+  .action-btn:hover:not(:disabled) {
+    filter: brightness(1.08);
+  }
+
+  .action-btn--fold:hover:not(:disabled) {
+    border-color: rgba(154, 163, 173, 0.9);
+    filter: none;
+  }
+
+  .preaction:hover {
+    border-color: rgba(238, 228, 207, 0.5);
+  }
+
+  .raise-token:hover:not(:disabled) {
+    filter: brightness(1.1);
+  }
+
+  .raise-stepper:hover:not(:disabled) {
+    background: rgba(238, 228, 207, 0.1);
+  }
+}
+
+/* ---------- Motion: only answers to the game ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* The turn arrives: the panel lifts into place once. */
+  .action-bar[data-turn='mine'] {
+    animation: action-bar-turn 0.3s var(--ab-ease);
+  }
+
+  .action-bar[data-level='urgent'] .action-bar__timer-fill {
+    animation: action-timer-pulse 0.7s ease-in-out infinite alternate;
+  }
+
+  .action-bar[data-level='urgent'] .action-bar__seconds {
+    animation: action-seconds-pulse 0.7s ease-in-out infinite alternate;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .action-bar,
+  .action-bar *,
+  .action-bar *::before,
+  .action-bar *::after {
+    animation: none !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@keyframes action-bar-turn {
+  from {
+    transform: translateY(10px);
+  }
+
+  to {
+    transform: none;
+  }
+}
+
+@keyframes action-timer-pulse {
+  from {
+    opacity: 0.55;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes action-seconds-pulse {
+  from {
+    transform: scale(1);
+  }
+
+  to {
+    transform: scale(1.14);
+  }
+}

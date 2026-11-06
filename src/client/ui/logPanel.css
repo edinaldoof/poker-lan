@@ -1,0 +1,436 @@
+/* ==========================================================================
+   Registro do Juiz - a dealer's ledger: one block per hand, tone markers,
+   results with the real card art.
+   ========================================================================== */
+
+/* aside.log-panel outranks the shared HUD rule that makes every HUD block catch the pointer. */
+aside.log-panel {
+  position: absolute;
+  top: var(--top-gap, 8px);
+  right: calc(var(--safe-right, 0px) + 8px);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  /* Only the toggle and the open sheet take clicks; the rest stays clickable 3D table. */
+  pointer-events: none;
+}
+
+.log-panel__toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid rgba(201, 163, 92, 0.5);
+  border-radius: 18px;
+  background: var(--rail);
+  box-shadow: 0 3px 8px rgba(10, 5, 2, 0.5);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ivory);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: border-color 0.16s, background-color 0.16s;
+}
+
+.log-panel__toggle .icon {
+  color: var(--brass-bright);
+}
+
+.log-panel__toggle:hover {
+  border-color: var(--brass-bright);
+  background: var(--rail-raised);
+}
+
+.log-panel__toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.log-panel__chevron {
+  display: grid;
+  color: var(--smoke);
+  transition: transform 0.2s var(--ease, ease);
+}
+
+.log-panel[data-open='true'] .log-panel__chevron {
+  transform: rotate(180deg);
+}
+
+.log-panel__unread {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--brass);
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 18px;
+  text-align: center;
+  color: var(--rail);
+}
+
+/* ---------- Sheet ---------- */
+
+.log-panel__body {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: min(320px, calc(100vw - 16px - var(--safe-left, 0px) - var(--safe-right, 0px)));
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-8px) scale(0.98);
+  transform-origin: top right;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.22s var(--ease, ease), visibility 0s linear 0.22s;
+}
+
+.log-panel[data-open='true'] .log-panel__body {
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+  transition: opacity 0.2s, transform 0.22s var(--ease, ease), visibility 0s;
+}
+
+.log-panel__sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: min(60vh, 460px);
+  max-height: min(60dvh, 460px);
+  padding: 12px 12px 10px;
+}
+
+.log-panel__title {
+  flex: none;
+  font-size: 20px;
+}
+
+.log-panel__tabs {
+  display: flex;
+  flex: none;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--rail-deep);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.log-panel__tab {
+  flex: 1;
+  min-height: 32px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--smoke);
+  cursor: pointer;
+  transition: background-color 0.16s, color 0.16s;
+}
+
+.log-panel__tab:hover {
+  color: var(--ivory);
+}
+
+.log-panel__tab[aria-selected='true'] {
+  background: var(--baize);
+  box-shadow: 0 0 0 1.5px rgba(238, 228, 207, 0.55) inset, 0 2px 0 rgba(0, 0, 0, 0.4);
+  color: var(--ivory);
+}
+
+.log-panel__tab:focus-visible {
+  outline: 2px solid var(--brass-bright);
+  outline-offset: 1px;
+}
+
+.log-panel__filters {
+  flex: none;
+}
+
+.log-panel .log-panel__filters .mk-option__face {
+  height: 32px;
+  font-size: 13px;
+}
+
+@media (pointer: coarse) {
+  .log-panel__toggle {
+    height: 44px;
+  }
+
+  .log-panel__tab {
+    min-height: 44px;
+  }
+
+  .log-panel .log-panel__filters .mk-option__face {
+    height: 44px;
+  }
+}
+
+.log-panel__pane {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(201, 163, 92, 0.4) transparent;
+}
+
+.log-empty {
+  margin: 0;
+  padding: 10px 2px;
+  font-size: 13px;
+  color: var(--smoke);
+}
+
+/* ---------- Ledger (tab Juiz) ---------- */
+
+.ledger,
+.ledger__rows,
+.hand-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ledger {
+  display: grid;
+  gap: 10px;
+}
+
+.ledger__hand {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 10px;
+  padding: 2px 0 4px;
+  background: var(--rail);
+}
+
+.ledger__hand-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--brass-bright);
+}
+
+.ledger__hand-details {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--smoke);
+}
+
+.ledger__rows {
+  display: grid;
+  gap: 2px;
+}
+
+.ledger__row {
+  --tone: var(--smoke);
+  display: grid;
+  grid-template-columns: 34px 20px minmax(0, 1fr);
+  align-items: start;
+  gap: 6px;
+  padding: 3px 0;
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--ivory);
+}
+
+.ledger__row[data-tone='action'] {
+  --tone: var(--ivory);
+}
+
+.ledger__row[data-tone='street'] {
+  --tone: var(--brass);
+}
+
+.ledger__row[data-tone='win'] {
+  --tone: #5ccf9a;
+  font-weight: 600;
+}
+
+.ledger__row[data-tone='warn'] {
+  --tone: #e3a33f;
+}
+
+.ledger__row[data-tone='alert'] {
+  --tone: var(--lacquer-bright);
+}
+
+.ledger__row[data-tone='info'] {
+  color: rgba(238, 228, 207, 0.8);
+}
+
+.ledger__time {
+  padding-top: 2px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--smoke);
+}
+
+.ledger__marker {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--tone) 18%, transparent);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--tone) 55%, transparent);
+  color: var(--tone);
+}
+
+.ledger__text {
+  min-width: 0;
+  padding-top: 1px;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Hands (tab Mãos) ---------- */
+
+.hand-list {
+  display: grid;
+  gap: 8px;
+}
+
+.hand-card {
+  display: grid;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--rail-raised);
+  box-shadow: inset 0 0 0 1.5px var(--hairline);
+}
+
+.hand-card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.hand-card__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ivory);
+}
+
+.hand-card__pot {
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--brass-bright);
+}
+
+.hand-card__muted {
+  font-size: 12px;
+  color: var(--smoke);
+}
+
+.hand-card__winners {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hand-card__winner {
+  --player-color: var(--brass);
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.hand-card__dot {
+  width: 12px;
+  height: 12px;
+  margin-top: 3px;
+  border-radius: 50%;
+  background: var(--player-color);
+  box-shadow: 0 0 0 1.5px var(--rail-raised), 0 0 0 3px rgba(238, 228, 207, 0.35);
+}
+
+.hand-card__winner-text {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.hand-card__amount {
+  font-variant-numeric: tabular-nums;
+  color: var(--brass-bright);
+}
+
+.hand-card__hand-name {
+  display: block;
+  font-size: 12px;
+  color: var(--smoke);
+}
+
+/* ---------- Small screens ---------- */
+
+@media (max-width: 480px), (max-height: 520px) {
+  .log-panel__toggle {
+    width: 36px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  @media (pointer: coarse) {
+    .log-panel__toggle {
+      width: 44px;
+    }
+  }
+
+  .log-panel__toggle-text,
+  .log-panel__chevron {
+    display: none;
+  }
+
+  .log-panel__unread {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+  }
+
+  .log-panel__sheet {
+    max-height: calc(100dvh - 76px - var(--safe-top, 0px) - var(--safe-bottom, 0px));
+  }
+}
+
+/* Short screens: the sheet is mostly list, so the title goes and the controls shrink. */
+@media (max-height: 520px) {
+  .log-panel__title {
+    display: none;
+  }
+
+  .log-panel__sheet {
+    gap: 6px;
+    padding-top: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .log-panel__body,
+  .log-panel[data-open='true'] .log-panel__body {
+    transition: none;
+  }
+}

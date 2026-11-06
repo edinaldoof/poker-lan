@@ -1,0 +1,508 @@
+/* ==========================================================================
+   The Judge: ledger panel at the top-left and the dealer's speech bubble.
+   Colours come from the --hud-* aliases declared in hud.css.
+   ========================================================================== */
+
+.judge {
+  position: relative;
+  z-index: 20;
+  display: grid;
+  gap: 6px;
+  width: min(300px, 100%);
+  padding: 9px 12px 10px;
+  border-radius: 12px;
+  background-color: var(--hud-rail);
+  background-image: var(--hud-grain);
+  box-shadow: inset 0 1px 0 rgba(238, 228, 207, 0.07), 0 14px 30px rgba(10, 5, 2, 0.6);
+  color: var(--hud-ivory);
+  font-family: var(--hud-ui);
+  pointer-events: auto;
+}
+
+/* Brass stitching, inside the edge. */
+.judge::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1.5px dashed var(--hud-stitch);
+  border-radius: 9px;
+  pointer-events: none;
+}
+
+.judge__top {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-height: 22px;
+}
+
+.judge__title {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  gap: 5px;
+  color: var(--hud-brass-bright);
+  font-family: var(--hud-display);
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.judge__hand {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.judge__blinds {
+  margin-left: auto;
+  color: var(--hud-smoke);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.judge__blinds strong {
+  margin-left: 4px;
+  color: var(--hud-ivory);
+  font-weight: 600;
+}
+
+.judge__pot {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  white-space: nowrap;
+  transform-origin: 100% 60%;
+}
+
+.judge__pot-label {
+  color: var(--hud-smoke);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.judge__pot-value {
+  color: var(--hud-brass-bright);
+  font-family: var(--hud-display);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.judge__pot.is-bumped {
+  animation: judge-pot-bump 0.5s var(--ease, ease-out);
+}
+
+/* ---------- Street progress: five stops on a brass rail ---------- */
+
+.judge__streets {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.judge__step {
+  --step-line: rgba(238, 228, 207, 0.2);
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  color: var(--hud-smoke);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* The rail segment that joins this stop to the previous one. */
+.judge__step::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--step-line);
+}
+
+.judge__step:first-child::before {
+  display: none;
+}
+
+.judge__step-dot {
+  position: relative;
+  z-index: 1;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--hud-smoke);
+  border-radius: 50%;
+  background: var(--hud-rail);
+}
+
+.judge__step[data-state='done'] {
+  --step-line: var(--hud-brass);
+}
+
+.judge__step[data-state='done'] .judge__step-dot {
+  border-color: var(--hud-brass);
+  background: var(--hud-brass);
+}
+
+.judge__step[data-state='current'] {
+  --step-line: var(--hud-brass);
+  color: var(--hud-ivory);
+  font-weight: 700;
+}
+
+.judge__step[data-state='current'] .judge__step-dot {
+  width: 14px;
+  height: 14px;
+  margin: -2px 0;
+  border-color: var(--hud-brass-bright);
+  background: var(--hud-baize);
+  box-shadow: 0 0 0 2px rgba(21, 94, 67, 0.45);
+}
+
+/* ---------- The Judge's latest line ---------- */
+
+.judge__headline {
+  --tone: var(--hud-smoke);
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  padding: 1px 0 1px 8px;
+  border-left: 3px solid var(--tone);
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.judge__headline[data-tone='action'] {
+  --tone: var(--hud-tone-action);
+}
+
+.judge__headline[data-tone='street'] {
+  --tone: var(--hud-brass);
+}
+
+.judge__headline[data-tone='win'] {
+  --tone: var(--hud-act-win);
+}
+
+.judge__headline[data-tone='warn'] {
+  --tone: var(--hud-tone-warn);
+}
+
+.judge__headline[data-tone='alert'] {
+  --tone: var(--hud-act-allin);
+}
+
+.judge__headline-icon {
+  flex: none;
+  margin-top: 1px;
+  color: var(--tone);
+}
+
+.judge__headline-text {
+  display: -webkit-box;
+  min-width: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.judge__headline[data-tone='win'] .judge__headline-text {
+  color: var(--hud-act-win);
+}
+
+.judge__headline.is-entering {
+  animation: judge-headline-in 0.3s var(--ease, ease-out);
+}
+
+/* ---------- Narrow screens ---------- */
+
+@media (max-width: 559px) {
+  .judge {
+    width: 100%;
+    padding: 8px 12px 9px;
+  }
+
+  .judge__blinds-label {
+    display: none;
+  }
+
+  .judge__headline {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 380px) {
+  .judge__step {
+    font-size: 10.5px;
+  }
+}
+
+/*
+ * Short landscape screens (phones): the ledger becomes a strip beside the toolbar. The hand, blinds and step names
+ * give way to the headline, the pot and five dots. hud.css lays out the strip; Stage.ts reads --hud-top-reserve.
+ */
+@media (max-height: 520px) {
+  .judge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 12px;
+    border-radius: 12px;
+  }
+
+  .judge::before {
+    inset: 3px;
+    border-radius: 9px;
+  }
+
+  .judge__top {
+    display: contents;
+  }
+
+  .judge__title {
+    order: 0;
+  }
+
+  .judge__title-text,
+  .judge__hand,
+  .judge__blinds,
+  .judge__pot-label,
+  .judge__step-label {
+    display: none;
+  }
+
+  .judge__headline {
+    order: 1;
+    flex: 1;
+    min-width: 0;
+    padding-block: 0;
+    font-size: 13px;
+    line-height: 1.25;
+  }
+
+  .judge__pot {
+    order: 2;
+  }
+
+  .judge__pot-value {
+    font-size: 22px;
+  }
+
+  .judge__streets {
+    order: 3;
+    display: flex;
+    gap: 7px;
+  }
+
+  .judge__step {
+    gap: 0;
+  }
+
+  .judge__step::before {
+    display: none;
+  }
+
+  .judge__step-dot {
+    width: 9px;
+    height: 9px;
+    border-width: 1.5px;
+  }
+
+  .judge__step[data-state='current'] .judge__step-dot {
+    width: 11px;
+    height: 11px;
+    margin: -1px;
+    box-shadow: none;
+  }
+}
+
+/* ---------- Dealer speech bubble ---------- */
+
+.dealer-bubble-anchor {
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/*
+ * Card ivory, like a printed card held up by the croupier; the border carries the tone of the line.
+ * DealerBubble.ts picks the placement: above the head when there is room, otherwise beside it.
+ */
+.dealer-bubble {
+  --tone: #8e8577;
+  --bubble-shift: -50%;
+  --bubble-nudge: 0px;
+  position: absolute;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: max-content;
+  max-width: min(260px, 64vw);
+  padding: 8px 12px 8px 10px;
+  border: 2px solid var(--tone);
+  border-radius: 14px;
+  background: var(--hud-ivory);
+  box-shadow: 0 8px 20px rgba(10, 5, 2, 0.55);
+  color: var(--hud-rail);
+  font-family: var(--hud-ui);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.25;
+  transition: opacity 0.22s;
+}
+
+/* The tail is a rotated square whose two outer borders continue the bubble's border. */
+.dealer-bubble::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--tone);
+  background: var(--hud-ivory);
+}
+
+.dealer-bubble[data-placement='above'] {
+  bottom: var(--bubble-above-gap, 14px);
+  left: 50%;
+  transform: translateX(var(--bubble-shift));
+  transform-origin: 50% 100%;
+}
+
+.dealer-bubble[data-placement='above']::after {
+  bottom: -8px;
+  left: 50%;
+  border-top-color: transparent;
+  border-left-color: transparent;
+  border-radius: 0 0 3px 0;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.dealer-bubble[data-placement='right'],
+.dealer-bubble[data-placement='left'] {
+  --bubble-shift: 0px;
+  --bubble-from-y: calc(-50% + 6px);
+  --bubble-to-y: -50%;
+  top: calc(var(--bubble-side-drop, 36px) + var(--bubble-nudge));
+  transform: translateY(-50%);
+}
+
+.dealer-bubble[data-placement='right'] {
+  left: var(--bubble-side-offset, 52px);
+  transform-origin: 0 50%;
+}
+
+.dealer-bubble[data-placement='left'] {
+  right: var(--bubble-side-offset, 52px);
+  transform-origin: 100% 50%;
+}
+
+.dealer-bubble[data-placement='right']::after {
+  top: 50%;
+  left: -8px;
+  border-top-color: transparent;
+  border-right-color: transparent;
+  border-radius: 0 0 0 3px;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.dealer-bubble[data-placement='left']::after {
+  top: 50%;
+  right: -8px;
+  border-bottom-color: transparent;
+  border-left-color: transparent;
+  border-radius: 0 3px 0 0;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.dealer-bubble[data-tone='action'] {
+  --tone: #3f7fc0;
+}
+
+.dealer-bubble[data-tone='street'] {
+  --tone: #9a7a2e;
+}
+
+.dealer-bubble[data-tone='win'] {
+  --tone: #155e43;
+}
+
+.dealer-bubble[data-tone='warn'] {
+  --tone: #b9791c;
+}
+
+.dealer-bubble[data-tone='alert'] {
+  --tone: #b8402f;
+}
+
+.dealer-bubble.is-popping {
+  animation: dealer-bubble-in 0.3s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+.dealer-bubble.is-leaving {
+  opacity: 0;
+}
+
+.dealer-bubble__icon {
+  flex: none;
+  margin-top: 1px;
+  color: var(--tone);
+}
+
+.dealer-bubble__text {
+  display: -webkit-box;
+  min-width: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Motion ---------- */
+
+@keyframes judge-pot-bump {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.14);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes judge-headline-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes dealer-bubble-in {
+  from {
+    opacity: 0;
+    transform: translateX(var(--bubble-shift)) translateY(var(--bubble-from-y, 8px)) scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(var(--bubble-shift)) translateY(var(--bubble-to-y, 0px));
+  }
+}

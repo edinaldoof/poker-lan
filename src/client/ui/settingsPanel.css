@@ -1,0 +1,211 @@
+/* ==========================================================================
+   Settings - a leather tray that opens under the gear button.
+   ========================================================================== */
+
+.settings {
+  position: relative;
+}
+
+.settings__popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(320px, calc(100vw - 16px - var(--safe-left, 0px) - var(--safe-right, 0px)));
+  max-height: calc(100vh - 76px - var(--safe-top, 0px) - var(--safe-bottom, 0px));
+  max-height: calc(100dvh - 76px - var(--safe-top, 0px) - var(--safe-bottom, 0px));
+  padding: 12px 14px;
+  transform-origin: 18px -8px;
+  animation: settings-open 0.18s var(--ease, ease);
+}
+
+@keyframes settings-open {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.settings__head {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.settings__head .mk-title {
+  font-size: 22px;
+}
+
+.settings__close {
+  width: 32px;
+  height: 32px;
+  box-shadow: none;
+}
+
+.settings__scroll {
+  display: grid;
+  flex: 1 1 auto;
+  align-content: start;
+  gap: 12px;
+  min-height: 0;
+  padding: 2px 4px 4px 2px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(201, 163, 92, 0.4) transparent;
+}
+
+.settings__section {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+}
+
+.settings__section + .settings__section {
+  padding-top: 10px;
+  border-top: 1.5px solid var(--hairline);
+}
+
+.settings__voice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.settings__voice {
+  flex: 1 1 160px;
+  min-width: 0;
+  min-height: 36px;
+  font-size: 14px;
+}
+
+.settings .mk-heading {
+  font-size: 14px;
+}
+
+.settings .mk-field {
+  gap: 4px;
+}
+
+.settings .mk-label {
+  font-size: 13px;
+}
+
+.settings .mk-toggle {
+  min-height: 36px;
+}
+
+.settings .mk-slider__input {
+  height: 32px;
+}
+
+.settings .mk-slider__value {
+  font-size: 17px;
+}
+
+.settings .mk-btn,
+.settings .mk-btn--small {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 14px;
+}
+
+.settings .mk-options--segment {
+  gap: 2px;
+  padding: 3px;
+  border-radius: 10px;
+}
+
+.settings .mk-options--segment .mk-option__face {
+  height: 32px;
+  font-size: 13px;
+}
+
+.settings .mk-options--segment .mk-option__input:checked ~ .mk-option__face {
+  padding-left: 26px;
+}
+
+.settings .mk-options--swatch {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.settings .mk-options--swatch .mk-option {
+  padding: 2px 0 4px;
+}
+
+.settings .mk-options--swatch .mk-option__face {
+  width: 30px;
+  height: 30px;
+}
+
+.settings .mk-options--swatch .mk-option__face::before {
+  inset: 4px;
+}
+
+.settings .mk-options--swatch .mk-option__check {
+  top: -2px;
+  right: calc(50% - 24px);
+  width: 16px;
+  height: 16px;
+}
+
+.settings .mk-option__caption {
+  font-size: 12px;
+}
+
+@media (pointer: coarse) {
+  .settings__close,
+  .settings .mk-btn,
+  .settings .mk-btn--small,
+  .settings .mk-toggle,
+  .settings__voice {
+    min-height: 44px;
+  }
+
+  .settings__close {
+    width: 44px;
+    height: 44px;
+  }
+
+  .settings .mk-slider__input {
+    height: 44px;
+  }
+
+  .settings .mk-options--segment .mk-option__face {
+    height: 40px;
+  }
+}
+
+/* Wide screens and landscape phones: two columns, so the whole tray fits without scrolling. */
+@media (min-width: 900px) and (min-height: 560px), (max-height: 520px) and (orientation: landscape) {
+  .settings__popover {
+    width: min(540px, calc(100vw - 16px - var(--safe-left, 0px) - var(--safe-right, 0px)));
+  }
+
+  .settings__scroll {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 22px;
+  }
+
+  .settings__section + .settings__section {
+    padding-top: 0;
+    border-top: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settings__popover {
+    animation: none;
+  }
+}

@@ -1,0 +1,999 @@
+/* ==========================================================================
+   Mesa Real - "Clube de cartas" kit
+   Materials of a private card room: rail leather, baize, brass, card ivory,
+   lacquer red and smoke. Shared by the lobby, waiting room, settings, the
+   judge's ledger, the loading screen and the manual.
+   ========================================================================== */
+
+@import '@fontsource/big-shoulders-display/latin-700';
+@import '@fontsource/big-shoulders-display/latin-800';
+@import '@fontsource/barlow/latin-400';
+@import '@fontsource/barlow/latin-500';
+@import '@fontsource/barlow/latin-600';
+
+:root {
+  --rail: #1a120d;
+  --rail-deep: #120c08;
+  --rail-raised: #281c14;
+  --baize: #155e43;
+  --baize-deep: #0d3f2d;
+  --baize-bright: #2c8a64;
+  --brass: #c9a35c;
+  --brass-bright: #dcba78;
+  --brass-deep: #8a6a2f;
+  --ivory: #eee4cf;
+  --lacquer: #b8402f;
+  --lacquer-deep: #7d2a1e;
+  --lacquer-bright: #e0705c;
+  --smoke: #8e8577;
+
+  --stitch: rgba(201, 163, 92, 0.55);
+  --hairline: rgba(238, 228, 207, 0.14);
+  --focus-ring: 0 0 0 2px var(--rail), 0 0 0 4px var(--brass-bright);
+
+  --font-display: 'Big Shoulders Display', 'Arial Narrow', 'Roboto Condensed', Impact, sans-serif;
+  --font-ui: 'Barlow', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font: var(--font-ui);
+
+  --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 .92  0 0 0 0 .8  .22 0 0 0 -.06'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+/* Layer for the manual (and any future full-screen sheet): above the lobby, below the loading screen. */
+#overlay-root {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+}
+
+/* ---------- Surfaces ---------- */
+
+.mk-panel {
+  position: relative;
+  padding: 24px;
+  border-radius: 18px;
+  background-color: var(--rail);
+  background-image: var(--grain);
+  box-shadow:
+    inset 0 1px 0 rgba(238, 228, 207, 0.07),
+    0 22px 46px rgba(10, 5, 2, 0.62),
+    0 2px 6px rgba(10, 5, 2, 0.5);
+  color: var(--ivory);
+  font-family: var(--font-ui);
+}
+
+/* Brass stitching, 6 px inside the edge. */
+.mk-panel::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1.5px dashed var(--stitch);
+  border-radius: 13px;
+  pointer-events: none;
+}
+
+.mk-panel--compact {
+  padding: 16px;
+  border-radius: 14px;
+}
+
+.mk-panel--compact::before {
+  inset: 5px;
+  border-radius: 10px;
+}
+
+.mk-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ivory);
+}
+
+.mk-heading {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--brass);
+}
+
+.mk-hint {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--smoke);
+}
+
+.mk-numeric {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Fields ---------- */
+
+.mk-field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.mk-field__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mk-label {
+  padding: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ivory);
+}
+
+.mk-counter {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--smoke);
+}
+
+.mk-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+  border: 1.5px solid rgba(201, 163, 92, 0.38);
+  border-radius: 10px;
+  background: var(--rail-deep);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+  font-family: var(--font-ui);
+  /* 16 px keeps iOS Safari from zooming the page on focus. */
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--ivory);
+  transition: border-color 0.16s;
+}
+
+.mk-input::placeholder {
+  color: var(--smoke);
+}
+
+.mk-input:hover {
+  border-color: rgba(201, 163, 92, 0.6);
+}
+
+.mk-input:focus-visible,
+.mk-input:focus {
+  border-color: var(--brass-bright);
+  outline: none;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5), 0 0 0 3px rgba(201, 163, 92, 0.35);
+}
+
+.mk-input[aria-invalid='true'] {
+  border-color: var(--lacquer-bright);
+}
+
+.mk-select {
+  padding-right: 44px;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23c9a35c' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.mk-select option {
+  background: var(--rail);
+  color: var(--ivory);
+}
+
+.mk-error {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--lacquer-bright);
+}
+
+/* ---------- Buttons ---------- */
+
+.mk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1.5px solid rgba(201, 163, 92, 0.55);
+  border-radius: 10px;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--ivory);
+  cursor: pointer;
+  transition: background-color 0.16s, border-color 0.16s, color 0.16s, transform 0.1s, box-shadow 0.1s;
+}
+
+.mk-btn:hover:not(:disabled) {
+  border-color: var(--brass-bright);
+  background: rgba(201, 163, 92, 0.14);
+}
+
+.mk-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.mk-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.mk-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.mk-btn--block {
+  width: 100%;
+}
+
+/* The one call to action of a surface: raised brass key. */
+.mk-btn--cta {
+  min-height: 52px;
+  padding: 0 24px;
+  border-color: var(--brass-deep);
+  border-radius: 12px;
+  background: var(--brass);
+  box-shadow: 0 3px 0 var(--brass-deep), 0 8px 16px rgba(0, 0, 0, 0.35);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--rail);
+}
+
+.mk-btn--cta:hover:not(:disabled) {
+  border-color: var(--brass-deep);
+  background: var(--brass-bright);
+}
+
+.mk-btn--cta:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--brass-deep), 0 3px 8px rgba(0, 0, 0, 0.35);
+}
+
+.mk-btn--cta:focus-visible {
+  box-shadow: 0 3px 0 var(--brass-deep), var(--focus-ring);
+}
+
+.mk-btn--danger {
+  border-color: var(--lacquer);
+  background: var(--lacquer);
+  color: var(--ivory);
+}
+
+.mk-btn--danger:hover:not(:disabled) {
+  border-color: var(--lacquer-bright);
+  background: #c9503e;
+}
+
+.mk-btn--ghost-danger {
+  border-color: rgba(224, 112, 92, 0.6);
+  color: var(--lacquer-bright);
+}
+
+.mk-btn--ghost-danger:hover:not(:disabled) {
+  border-color: var(--lacquer-bright);
+  background: rgba(184, 64, 47, 0.18);
+}
+
+.mk-btn--small {
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: 14px;
+}
+
+.mk-btn[data-state='done'] {
+  border-color: var(--baize-bright);
+  color: #8fd8b6;
+}
+
+.mk-btn[data-state='failed'] {
+  border-color: var(--lacquer-bright);
+  color: var(--lacquer-bright);
+}
+
+.mk-icon-btn {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1.5px solid rgba(201, 163, 92, 0.55);
+  border-radius: 50%;
+  background: var(--rail);
+  box-shadow: 0 6px 14px rgba(10, 5, 2, 0.5);
+  color: var(--brass-bright);
+  cursor: pointer;
+  transition: border-color 0.16s, background-color 0.16s, transform 0.1s;
+}
+
+.mk-icon-btn:hover {
+  border-color: var(--brass-bright);
+  background: var(--rail-raised);
+}
+
+.mk-icon-btn[aria-expanded='true'] {
+  border-color: var(--brass-bright);
+  background: var(--baize-deep);
+}
+
+.mk-icon-btn:active {
+  transform: scale(0.96);
+}
+
+.mk-icon-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.mk-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--brass-bright);
+  text-decoration: underline;
+  text-decoration-color: rgba(201, 163, 92, 0.5);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.mk-link:hover {
+  text-decoration-color: var(--brass-bright);
+}
+
+.mk-link:focus-visible {
+  border-radius: 6px;
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* ---------- Option selectors: chip tokens, segments, swatches, avatars ---------- */
+
+.mk-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.mk-option {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 4px;
+  min-width: 44px;
+  cursor: pointer;
+}
+
+.mk-option__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.mk-option[data-disabled='true'] {
+  cursor: not-allowed;
+}
+
+.mk-option__caption {
+  max-width: 100%;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.1;
+  text-align: center;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: var(--smoke);
+  transition: color 0.16s;
+}
+
+.mk-option__input:checked ~ .mk-option__caption {
+  color: var(--ivory);
+}
+
+.mk-option__check {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  z-index: 2;
+  display: none;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--baize-deep);
+  border-radius: 50%;
+  background: var(--ivory);
+  color: var(--baize-deep);
+  pointer-events: none;
+}
+
+.mk-option__input:checked ~ .mk-option__check {
+  display: grid;
+}
+
+.mk-option__check .icon {
+  width: 11px;
+  height: 11px;
+  stroke-width: 3;
+}
+
+/* Round chip token: ivory edge stripes around a solid face. */
+.mk-option__face {
+  --fill: var(--choice-color, var(--rail-raised));
+  --stripe: rgba(238, 228, 207, 0.5);
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from -7deg, var(--stripe) 0 14deg, var(--fill) 14deg 60deg);
+  box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.45), 0 3px 0 rgba(0, 0, 0, 0.45);
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ivory);
+  transition: transform 0.16s var(--ease, ease), box-shadow 0.16s, background-color 0.16s;
+}
+
+.mk-option__face::before {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  background: var(--fill);
+  box-shadow: 0 0 0 1.5px rgba(238, 228, 207, 0.55);
+}
+
+.mk-option__face > * {
+  position: relative;
+}
+
+.mk-option:hover:not([data-disabled='true']) .mk-option__face {
+  transform: translateY(-1px);
+}
+
+.mk-option__input:checked ~ .mk-option__face {
+  --stripe: var(--ivory);
+  transform: translateY(-3px);
+  box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.5), 0 6px 0 rgba(0, 0, 0, 0.5), 0 10px 14px rgba(0, 0, 0, 0.35);
+}
+
+.mk-option__input:focus-visible ~ .mk-option__face {
+  outline: 2px solid var(--brass-bright);
+  outline-offset: 3px;
+}
+
+.mk-option[data-disabled='true'] .mk-option__face {
+  opacity: 0.35;
+  filter: grayscale(0.7);
+}
+
+.mk-option[data-disabled='true'] .mk-option__caption {
+  opacity: 0.55;
+}
+
+/* Selection is baize green; colour-bearing tokens (swatches, chips) keep their own colour. */
+.mk-options--token .mk-option__input:checked ~ .mk-option__face {
+  --fill: var(--baize);
+}
+
+/* Pair of mini chips (small blind and big blind). */
+.mk-option__face--pair {
+  width: auto;
+  min-width: 76px;
+  height: 52px;
+  padding: 0 6px;
+  border-radius: 26px;
+  background: var(--fill);
+  box-shadow: 0 0 0 1.5px rgba(238, 228, 207, 0.35) inset, 0 0 0 1.5px rgba(0, 0, 0, 0.45), 0 3px 0 rgba(0, 0, 0, 0.45);
+}
+
+.mk-option__face--pair::before {
+  display: none;
+}
+
+.mk-options--token .mk-option__input:checked ~ .mk-option__face--pair {
+  box-shadow: 0 0 0 1.5px rgba(238, 228, 207, 0.9) inset, 0 0 0 1.5px rgba(0, 0, 0, 0.5), 0 6px 0 rgba(0, 0, 0, 0.5), 0 10px 14px rgba(0, 0, 0, 0.35);
+}
+
+.mk-pair {
+  display: flex;
+  align-items: center;
+}
+
+.mk-pair .mk-minichip + .mk-minichip {
+  margin-left: -9px;
+}
+
+.mk-minichip {
+  --chip: var(--smoke);
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from -10deg, var(--ivory) 0 20deg, var(--chip) 20deg 60deg);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55), 0 2px 3px rgba(0, 0, 0, 0.5);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ivory);
+}
+
+.mk-minichip::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: var(--chip);
+  box-shadow: 0 0 0 1px rgba(238, 228, 207, 0.6);
+}
+
+.mk-minichip > span {
+  position: relative;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.6);
+}
+
+.mk-minichip--large {
+  width: 38px;
+  height: 38px;
+  font-size: 15px;
+}
+
+/* Stopwatch glyph inside a token. */
+.mk-token-unit {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+}
+
+.mk-token-unit .icon {
+  width: 12px;
+  height: 12px;
+  opacity: 0.8;
+}
+
+/* Text segments: for options too long to fit a round token. */
+.mk-options--segment {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--rail-deep);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.mk-options--segment .mk-option {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.mk-options--segment .mk-option__face {
+  --fill: transparent;
+  width: 100%;
+  height: 44px;
+  padding: 0 10px;
+  border-radius: 9px;
+  background: transparent;
+  box-shadow: none;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--smoke);
+}
+
+.mk-options--segment .mk-option__face::before {
+  display: none;
+}
+
+.mk-options--segment .mk-option:hover:not([data-disabled='true']) .mk-option__face {
+  color: var(--ivory);
+  transform: none;
+}
+
+.mk-options--segment .mk-option__input:checked ~ .mk-option__face {
+  background: var(--baize);
+  box-shadow: 0 0 0 1.5px rgba(238, 228, 207, 0.55) inset, 0 2px 0 rgba(0, 0, 0, 0.4);
+  transform: none;
+  color: var(--ivory);
+}
+
+.mk-options--segment .mk-option__input:focus-visible ~ .mk-option__face {
+  outline-offset: 1px;
+}
+
+/* The ivory check of a selected segment sits inside it, ahead of the text. */
+.mk-options--segment .mk-option__check {
+  top: 50%;
+  right: auto;
+  left: 10px;
+  width: 16px;
+  height: 16px;
+  margin-top: -8px;
+  border: 0;
+  background: transparent;
+  color: var(--ivory);
+}
+
+.mk-options--segment .mk-option__check .icon {
+  width: 14px;
+  height: 14px;
+}
+
+.mk-options--segment .mk-option__input:checked ~ .mk-option__face {
+  padding-left: 28px;
+}
+
+/* Colour swatches: the token takes the player's colour. */
+.mk-options--swatch {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.mk-options--swatch .mk-option {
+  min-width: 0;
+  padding: 4px 0 6px;
+}
+
+.mk-options--swatch .mk-option__face {
+  width: 38px;
+  height: 38px;
+}
+
+.mk-options--swatch .mk-option__face::before {
+  inset: 5px;
+}
+
+.mk-options--swatch .mk-option__check {
+  top: 0;
+  right: calc(50% - 26px);
+}
+
+/* Eight cells only reach a 44 px tap width on a phone when the gap goes; below 390 px they wrap into two rows. */
+@media (max-width: 560px) {
+  .mk-options--swatch {
+    gap: 0;
+  }
+}
+
+@media (max-width: 389px) {
+  .mk-options--swatch {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Avatars: rounded squares, baize when chosen. */
+.mk-options--avatar {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.mk-options--avatar .mk-option {
+  min-width: 0;
+}
+
+.mk-options--avatar .mk-option__face {
+  --fill: var(--rail-raised);
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  min-height: 44px;
+  border-radius: 10px;
+  background: var(--fill);
+  box-shadow: inset 0 0 0 1.5px var(--hairline);
+  font-family: var(--font-ui);
+  font-size: 24px;
+}
+
+.mk-options--avatar .mk-option__face::before {
+  display: none;
+}
+
+.mk-options--avatar .mk-option:hover .mk-option__face {
+  background: #34261b;
+  transform: translateY(-2px);
+}
+
+.mk-options--avatar .mk-option__input:checked ~ .mk-option__face {
+  --fill: var(--baize);
+  background: var(--baize);
+  box-shadow: inset 0 0 0 2px var(--brass), 0 4px 0 rgba(0, 0, 0, 0.45);
+  transform: translateY(-2px);
+}
+
+.mk-options--avatar .mk-option__check {
+  top: -5px;
+  right: -5px;
+}
+
+/* ---------- Toggles and sliders ---------- */
+
+.mk-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.mk-toggle__text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.mk-toggle__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.mk-toggle__track {
+  position: relative;
+  flex: none;
+  width: 50px;
+  height: 30px;
+  border: 1.5px solid rgba(142, 133, 119, 0.7);
+  border-radius: 15px;
+  background: var(--rail-deep);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+  transition: background-color 0.18s, border-color 0.18s;
+}
+
+.mk-toggle__thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 21px;
+  height: 21px;
+  border-radius: 50%;
+  background: var(--smoke);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  transition: transform 0.18s var(--ease, ease), background-color 0.18s;
+}
+
+.mk-toggle__input:checked ~ .mk-toggle__track {
+  border-color: var(--brass);
+  background: var(--baize);
+}
+
+.mk-toggle__input:checked ~ .mk-toggle__track .mk-toggle__thumb {
+  transform: translateX(20px);
+  background: var(--brass);
+}
+
+.mk-toggle__input:focus-visible ~ .mk-toggle__track {
+  box-shadow: var(--focus-ring);
+}
+
+.mk-slider {
+  display: grid;
+  gap: 0;
+}
+
+.mk-slider__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mk-slider__value {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--brass-bright);
+}
+
+.mk-slider__input {
+  --fill: 0%;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.mk-slider__input::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--brass) var(--fill), var(--rail-deep) var(--fill));
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.mk-slider__input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 26px;
+  height: 26px;
+  margin-top: -10px;
+  border: 4px solid var(--rail);
+  border-radius: 50%;
+  background: var(--brass);
+  box-shadow: 0 0 0 1.5px var(--brass), 0 3px 6px rgba(0, 0, 0, 0.5);
+}
+
+.mk-slider__input::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--rail-deep);
+}
+
+.mk-slider__input::-moz-range-progress {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--brass);
+}
+
+.mk-slider__input::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border: 4px solid var(--rail);
+  border-radius: 50%;
+  background: var(--brass);
+  box-shadow: 0 0 0 1.5px var(--brass);
+}
+
+.mk-slider__input:focus-visible {
+  outline: none;
+}
+
+.mk-slider__input:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 1.5px var(--brass), 0 0 0 5px rgba(220, 186, 120, 0.55);
+}
+
+.mk-slider__input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---------- Disclosure and inline confirmation ---------- */
+
+.mk-disclosure {
+  display: grid;
+  border-radius: 12px;
+  background: var(--rail-deep);
+  box-shadow: inset 0 0 0 1.5px var(--hairline);
+}
+
+.mk-disclosure__toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 600;
+  text-align: left;
+  color: var(--ivory);
+  cursor: pointer;
+}
+
+.mk-disclosure__toggle:hover {
+  background: rgba(201, 163, 92, 0.08);
+}
+
+.mk-disclosure__toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.mk-disclosure__toggle > .icon:first-child {
+  color: var(--brass);
+}
+
+.mk-disclosure__label {
+  flex: 1;
+  min-width: 0;
+}
+
+.mk-disclosure__chevron {
+  transition: transform 0.2s var(--ease, ease);
+  color: var(--smoke);
+}
+
+.mk-disclosure[data-open='true'] .mk-disclosure__chevron {
+  transform: rotate(180deg);
+}
+
+.mk-disclosure__content {
+  display: grid;
+  gap: 10px;
+  padding: 2px 14px 14px;
+}
+
+.mk-confirm {
+  display: grid;
+  gap: 10px;
+}
+
+.mk-confirm__prompt {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--ivory);
+}
+
+.mk-confirm__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+/* ---------- Mini cards (card atlas) ---------- */
+
+.mini-card {
+  --mini-w: 28px;
+  display: inline-block;
+  flex: none;
+  width: var(--mini-w);
+  aspect-ratio: 256 / 360;
+  border-radius: 3px;
+  background-color: #f1ede4;
+  background-repeat: no-repeat;
+  background-size: 1300% 500%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.45);
+}
+
+.mini-card--dim {
+  opacity: 0.45;
+}
+
+.mini-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}

@@ -1,0 +1,277 @@
+/* ==========================================================================
+   Mesa Real - shared base: reset, tokens the HUD reads and small building blocks.
+   Menus (lobby, waiting room, settings, ledger, loading) and the card-room
+   tokens and fonts live in ui/menuKit.css and the per-panel stylesheets.
+   ========================================================================== */
+
+:root {
+  color-scheme: dark;
+
+  --gold: #e4b363;
+  --gold-bright: #f6d494;
+  --gold-deep: #a97c36;
+  --ink: #07080a;
+  --surface: rgba(12, 14, 18, 0.82);
+  --line: rgba(255, 255, 255, 0.1);
+  --line-strong: rgba(255, 255, 255, 0.2);
+  --line-gold: rgba(228, 179, 99, 0.45);
+  --text: #f3efe6;
+  --text-muted: #b1ada2;
+  --danger: #ef6b58;
+  --success: #6fd67a;
+  --info: #7f9bff;
+  --warn: #f0a94a;
+
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow-lg: 0 18px 50px rgba(0, 0, 0, 0.55);
+  --blur: blur(16px) saturate(1.25);
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
+  --top-gap: calc(var(--safe-top) + 8px);
+}
+
+/*
+ * Stage.ts reads these to fit the camera around the HTML floating over the canvas, so they must describe the
+ * rules below: the widest side-seat plate (half its width at the current --plate-scale, plus 4 px of margin), half
+ * the height of a plate (plates are centred on their seat), the HUD strip along the top edge, the action bar height
+ * that would reach the near seats (0 = it does not) and how far the dealer's speech bubble reaches above his head
+ * (0 = the bubble may move beside the head). Sizes were measured in the running app; see tests/stageFraming.test.ts.
+ */
+:root {
+  /* Pill plate: 193 px wide and 60 px tall at most (avatar + 112 px of text + padding). */
+  --side-plate-half-width: 101px;
+  --plate-half-height: 30px;
+  --hud-top-reserve: 0px;
+  --hud-bottom-reserve: 0px;
+  --dealer-bubble-rise: 0px;
+}
+
+@media (max-width: 700px) {
+  :root {
+    --side-plate-half-width: 83px;
+    --plate-half-height: 25px;
+  }
+}
+
+@media (max-width: 420px) {
+  :root {
+    --side-plate-half-width: 74px;
+    --plate-half-height: 22px;
+  }
+}
+
+/* Portrait plates are stacked (avatar over text): at most 82 px wide and 100 px tall. */
+@media (max-aspect-ratio: 1/1) {
+  :root {
+    --side-plate-half-width: 45px;
+    --plate-half-height: 50px;
+  }
+}
+
+@media (max-aspect-ratio: 1/1) and (max-width: 700px) {
+  :root {
+    --side-plate-half-width: 38px;
+    --plate-half-height: 41px;
+  }
+}
+
+@media (max-aspect-ratio: 1/1) and (max-width: 420px) {
+  :root {
+    --side-plate-half-width: 34px;
+    --plate-half-height: 36px;
+  }
+}
+
+/* Landscape phones: plates are 60 px tall at the 0.8 scale seatPlates.css gives them. */
+@media (max-height: 520px) and (min-aspect-ratio: 1/1) {
+  :root {
+    --plate-half-height: 24px;
+  }
+}
+
+/* ---------- Base ---------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--ink);
+  color: var(--text);
+  font: 400 15px/1.45 var(--font);
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+}
+
+#stage-root {
+  position: absolute;
+  inset: 0;
+  /* The CSS2D labels carry inline z-indexes; without their own stacking context they paint over the HUD layer. */
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--ink);
+}
+
+#stage-root canvas {
+  display: block;
+}
+
+/* The CSS2D renderer root must never swallow clicks meant for the HUD. */
+#stage-root > div {
+  pointer-events: none;
+}
+
+.ui-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.ui-layer--hud {
+  z-index: 10;
+}
+
+.ui-layer--lobby {
+  z-index: 20;
+}
+
+.ui-layer--loading {
+  z-index: 100;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+input {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold-bright);
+  outline-offset: 2px;
+}
+
+/* ---------- Shared building blocks ---------- */
+
+.icon {
+  display: block;
+  flex: none;
+}
+
+/* ---------- HUD frame ---------- */
+
+/* The toolbar, banners, hand chip, toasts and the Judge live in ui/hud.css and ui/judgePanel.css; the ledger in ui/logPanel.css. */
+
+/* ---------- Responsive refinements ---------- */
+
+/*
+ * Short landscape screens (phones). The table frame cannot give up more height, so the HUD gives up its own:
+ * the judge becomes a strip beside the toolbar and the raise controls sit next to the four buttons instead of
+ * above them. Stage.ts reads --hud-top-reserve and --hud-bottom-reserve to keep the far-side plates under that
+ * strip and the viewer's cards above the bar.
+ */
+@media (max-height: 520px) {
+  :root {
+    /* Open action bar (about 129 px with the home-bar gap) plus a little air under the viewer's cards. */
+    --hud-bottom-reserve: 140px;
+  }
+}
+
+/*
+ * Everything that is neither a landscape phone nor wide landscape: the toolbar and the Judge stack along the top
+ * (the Judge's lower edge is at 182 px on a 390 px phone and 186 px at 768 px) and the action bar is a bottom
+ * sheet. The camera keeps the far plates and the dealer's speech bubble (about 70 px above the head: a two-line
+ * bubble plus its gap) under that strip, and the near plates above the open bar (about 232 px tall on phones, 200 px
+ * from 600 px up, each with its 8 px margin and a little air).
+ */
+@media (min-height: 521px) and ((width < 1000px) or (aspect-ratio < 5/4)) {
+  :root {
+    --hud-top-reserve: 190px;
+    --hud-bottom-reserve: 205px;
+    --dealer-bubble-rise: 72px;
+  }
+}
+
+@media (min-height: 521px) and (max-width: 599px) {
+  :root {
+    --hud-bottom-reserve: 245px;
+  }
+}
+
+/* ---------- Keyframes ---------- */
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

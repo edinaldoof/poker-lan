@@ -1,0 +1,174 @@
+/* ==========================================================================
+   Loading screen - the same leather and brass as the menus.
+   ========================================================================== */
+
+.loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding: calc(var(--safe-top, 0px) + 28px) calc(var(--safe-right, 0px) + 28px) calc(var(--safe-bottom, 0px) + 28px) calc(var(--safe-left, 0px) + 28px);
+  background-color: var(--rail-deep);
+  background-image: var(--grain);
+  color: var(--ivory);
+  font-family: var(--font-ui);
+  pointer-events: auto;
+  transition: opacity 0.32s var(--ease, ease), visibility 0.32s;
+}
+
+/* Brass stitching around the whole screen, like the pad of a card table. */
+.loading::before {
+  content: '';
+  position: absolute;
+  inset: calc(var(--safe-top, 0px) + 10px) calc(var(--safe-right, 0px) + 10px) calc(var(--safe-bottom, 0px) + 10px) calc(var(--safe-left, 0px) + 10px);
+  border: 1.5px dashed var(--stitch);
+  border-radius: 18px;
+  pointer-events: none;
+}
+
+.loading.is-leaving {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.loading__content {
+  display: grid;
+  gap: 32px;
+  width: min(440px, 100%);
+  margin-left: max(0px, 5vw);
+}
+
+.loading__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(56px, 12vw, 88px);
+  font-weight: 800;
+  line-height: 0.92;
+  color: var(--ivory);
+}
+
+.loading__subtitle {
+  margin: 8px 0 0;
+  font-size: 17px;
+  font-weight: 500;
+  color: rgba(238, 228, 207, 0.78);
+}
+
+.loading__meter {
+  --progress: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.loading__lane {
+  --chip-size: 30px;
+  position: relative;
+  height: var(--chip-size);
+}
+
+.loading__track {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  height: 8px;
+  margin-top: -4px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--rail-raised);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.loading__fill {
+  width: 100%;
+  height: 100%;
+  background: var(--brass);
+  transform: scaleX(var(--progress));
+  transform-origin: left center;
+  transition: transform 0.3s var(--ease, ease);
+}
+
+/* A brass chip rolls along the track as the table loads. */
+.loading__chip {
+  position: absolute;
+  top: 0;
+  left: calc((100% - var(--chip-size)) * var(--progress));
+  width: var(--chip-size);
+  height: var(--chip-size);
+  border-radius: 50%;
+  background: repeating-conic-gradient(from -8deg, var(--ivory) 0 16deg, var(--brass) 16deg 60deg);
+  box-shadow: 0 0 0 1.5px rgba(0, 0, 0, 0.5), 0 3px 6px rgba(0, 0, 0, 0.5);
+  transform: rotate(calc(var(--progress) * 720deg));
+  transition: left 0.3s var(--ease, ease), transform 0.3s var(--ease, ease);
+}
+
+.loading__chip::after {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  background: var(--brass);
+  box-shadow: 0 0 0 1.5px rgba(26, 18, 13, 0.55);
+}
+
+.loading__status {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0;
+}
+
+.loading__label {
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(238, 228, 207, 0.8);
+}
+
+.loading__percent {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--brass-bright);
+}
+
+.loading__error {
+  display: grid;
+  gap: 16px;
+  justify-items: start;
+  padding: 16px 18px;
+  border: 1.5px solid var(--lacquer-bright);
+  border-radius: 12px;
+  background: rgba(184, 64, 47, 0.18);
+}
+
+.loading__error-text {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .loading__content {
+    gap: 16px;
+  }
+
+  .loading__title {
+    font-size: 52px;
+  }
+
+  .loading__subtitle {
+    margin-top: 4px;
+    font-size: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading__chip {
+    transition: none;
+  }
+}

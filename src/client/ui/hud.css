@@ -1,0 +1,369 @@
+/* ==========================================================================
+   HUD frame: toolbar, banners, hand chip and toasts, plus the --hud-* aliases
+   the plates, the Judge and the dealer's bubble draw from. The aliases point
+   at the shared club tokens (menuKit.css) and fall back to the same values.
+   ========================================================================== */
+
+:root {
+  --hud-rail: var(--rail, #1a120d);
+  --hud-baize: var(--baize, #155e43);
+  --hud-brass: var(--brass, #c9a35c);
+  --hud-brass-bright: var(--brass-bright, #dcba78);
+  --hud-ivory: var(--ivory, #eee4cf);
+  --hud-lacquer: var(--lacquer, #b8402f);
+  --hud-lacquer-bright: var(--lacquer-bright, #e0705c);
+  --hud-smoke: var(--smoke, #8e8577);
+  --hud-stitch: var(--stitch, rgba(201, 163, 92, 0.55));
+  --hud-grain: var(--grain, none);
+
+  /* Same colours as the action bar, so a callout over a seat matches the button the player pressed. */
+  --hud-act-fold: var(--act-fold, #9aa3ad);
+  --hud-act-check: var(--act-check, #5aa9ff);
+  --hud-act-call: var(--act-call, #35c98a);
+  --hud-act-bet: var(--act-bet, #e4b363);
+  --hud-act-raise: var(--act-raise, #f0c674);
+  --hud-act-allin: var(--act-allin, #ff5b3a);
+  --hud-act-win: var(--act-win, #ffd36b);
+  --hud-tone-action: #6fa6dd;
+  --hud-tone-warn: #e0a23a;
+
+  /* The families are named here (menuKit.css registers them) so a stale --font-display cannot turn numbers into serif. */
+  --hud-ui: 'Barlow', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --hud-display: 'Big Shoulders Display', 'Arial Narrow', 'Roboto Condensed', Impact, sans-serif;
+}
+
+.hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  font-family: var(--hud-ui);
+}
+
+/* ---------- Top-left column: toolbar, the Judge, then toasts ---------- */
+
+.hud-top {
+  position: absolute;
+  top: var(--top-gap);
+  right: calc(var(--safe-right) + 8px);
+  left: calc(var(--safe-left) + 8px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.hud-toolbar {
+  position: relative;
+  z-index: 25;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  /* Leaves room for the log toggle at the top-right corner. */
+  max-width: calc(100% - 52px);
+  pointer-events: auto;
+}
+
+/* On a 360 px phone the five controls only share one row with tighter gaps. */
+@media (max-width: 420px) {
+  .hud-toolbar {
+    gap: 5px;
+  }
+}
+
+.hud-tool,
+.hud-toolbar .manual-open-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 11px;
+  border: 1px solid rgba(201, 163, 92, 0.45);
+  border-radius: 9px;
+  background: var(--hud-rail);
+  box-shadow: 0 3px 8px rgba(10, 5, 2, 0.5);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  color: var(--hud-ivory);
+  font: 600 13px/1 var(--hud-ui);
+  letter-spacing: 0;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.18s, color 0.18s, transform 0.12s;
+}
+
+/* The gear is the settings button of the kit, drawn at the toolbar's height. */
+.hud-toolbar .settings > .mk-icon-btn {
+  width: 36px;
+  height: 36px;
+  box-shadow: 0 3px 8px rgba(10, 5, 2, 0.5);
+}
+
+/* Touch screens keep 44 px targets. */
+@media (pointer: coarse) {
+  .hud-tool,
+  .hud-toolbar .manual-open-btn {
+    min-height: 44px;
+  }
+
+  .hud-toolbar .settings > .mk-icon-btn {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+.hud-tool:hover,
+.hud-toolbar .manual-open-btn:hover {
+  border-color: var(--hud-brass);
+  color: var(--hud-brass-bright);
+}
+
+.hud-tool:active,
+.hud-toolbar .manual-open-btn:active {
+  transform: translateY(1px);
+}
+
+.hud-tool:focus-visible,
+.hud-toolbar .manual-open-btn:focus-visible {
+  outline: 2px solid var(--hud-brass-bright);
+  outline-offset: 2px;
+}
+
+.hud-tool__icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Narrow screens, and short landscape phones where the toolbar shares one strip with the Judge. */
+@media (max-width: 520px), (max-height: 520px) and (max-width: 900px) {
+  .hud-tool__label,
+  .hud-toolbar .manual-open-btn__label {
+    display: none;
+  }
+
+  .hud-tool,
+  .hud-toolbar .manual-open-btn {
+    width: 36px;
+    padding: 0;
+  }
+}
+
+@media (pointer: coarse) and (max-width: 520px), (pointer: coarse) and (max-height: 520px) and (max-width: 900px) {
+  .hud-tool,
+  .hud-toolbar .manual-open-btn {
+    width: 44px;
+  }
+}
+
+/* ---------- Toasts: short notes from the house ---------- */
+
+.toast-stack {
+  position: relative;
+  z-index: 40;
+  display: grid;
+  gap: 8px;
+  width: min(320px, 100%);
+  pointer-events: none;
+}
+
+.toast {
+  padding: 8px 12px;
+  border-left: 3px solid var(--hud-brass);
+  border-radius: 9px;
+  background-color: var(--hud-rail);
+  background-image: var(--hud-grain);
+  box-shadow: 0 10px 24px rgba(10, 5, 2, 0.6);
+  color: var(--hud-ivory);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+  animation: hud-toast-in 0.25s var(--ease, ease-out);
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+.toast[data-tone='error'] {
+  border-left-color: var(--hud-lacquer-bright);
+  background-color: color-mix(in srgb, var(--hud-lacquer) 28%, var(--hud-rail));
+}
+
+.toast.is-leaving {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+/* ---------- Bottom: banners and the hand chip ---------- */
+
+.hud-bottom {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0 calc(var(--safe-right) + 8px) calc(var(--safe-bottom) + 8px) calc(var(--safe-left) + 8px);
+  pointer-events: none;
+}
+
+.hud-bottom > * {
+  pointer-events: auto;
+}
+
+/* Hidden banners must not leave an empty flex gap behind. */
+.hud-banners {
+  display: contents;
+}
+
+.banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 14px;
+  border: 1px solid rgba(201, 163, 92, 0.45);
+  border-radius: 10px;
+  background-color: var(--hud-rail);
+  background-image: var(--hud-grain);
+  box-shadow: 0 10px 24px rgba(10, 5, 2, 0.6);
+  color: var(--hud-ivory);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.banner--action {
+  padding: 4px 4px 4px 14px;
+}
+
+.hud-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--hud-brass);
+  color: var(--hud-rail);
+  font: 700 14px/1 var(--hud-ui);
+  cursor: pointer;
+  transition: background-color 0.18s, transform 0.12s;
+}
+
+@media (pointer: coarse) {
+  .hud-cta,
+  .hand-chip {
+    min-height: 44px;
+  }
+}
+
+.hud-cta:hover {
+  background: var(--hud-brass-bright);
+}
+
+.hud-cta:active {
+  transform: translateY(1px);
+}
+
+.hud-cta:focus-visible {
+  outline: 2px solid var(--hud-ivory);
+  outline-offset: 2px;
+}
+
+.hand-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 10px 0 14px;
+  border: 1px solid rgba(201, 163, 92, 0.4);
+  border-radius: 10px;
+  background-color: var(--hud-rail);
+  background-image: var(--hud-grain);
+  box-shadow: 0 8px 20px rgba(10, 5, 2, 0.55);
+  color: var(--hud-smoke);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.18s;
+}
+
+.hand-chip:hover {
+  border-color: var(--hud-brass);
+}
+
+.hand-chip:focus-visible {
+  outline: 2px solid var(--hud-brass-bright);
+  outline-offset: 2px;
+}
+
+.hand-chip__value {
+  color: var(--hud-brass-bright);
+  font-family: var(--hud-display);
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.hand-chip__arrow {
+  color: var(--hud-smoke);
+  transform: rotate(-90deg);
+}
+
+/* Small portrait phones and landscape phones: the hand name moves from the floating chip into the action bar. */
+@media (max-width: 599px), (max-height: 520px) {
+  .hand-chip {
+    display: none;
+  }
+}
+
+/*
+ * Short landscape screens (phones). The table frame cannot give up more height, so the toolbar and the Judge
+ * share one strip along the top; Stage.ts reads --hud-top-reserve to keep the far-side plates under it.
+ */
+@media (max-height: 520px) {
+  :root {
+    --hud-top-reserve: 60px;
+  }
+
+  .hud-top {
+    right: calc(var(--safe-right) + 60px);
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .hud-toolbar {
+    flex: none;
+    max-width: none;
+  }
+
+  .hud-top .judge {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 560px;
+    width: auto;
+  }
+
+  .hud-top .toast-stack {
+    flex: 0 0 100%;
+  }
+
+  .hud-bottom {
+    padding-bottom: calc(var(--safe-bottom) + 6px);
+  }
+}
+
+@keyframes hud-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
